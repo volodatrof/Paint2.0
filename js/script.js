@@ -130,8 +130,7 @@ class CanvasApp {
         const y = e.clientY - this.canvas.offsetTop;
 
         if (this.shapeType === 'pencil' && this.currentShape) {
-            this.currentShape.addPoint(x, y);
-this.redraw();
+            this.currentShape.addPoint(x, y);this.redraw();
         } else {
             this.redraw();
             this.context.strokeStyle = this.color;
@@ -231,10 +230,10 @@ this.redraw();
         const previewCanvas = document.getElementById('shapePreviewCanvas');
         const previewContext = previewCanvas.getContext('2d');
         previewContext.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+
         previewContext.strokeStyle = this.color;
         previewContext.lineWidth = 5;
         previewContext.lineCap = 'round';
-
         previewContext.beginPath();
         if (this.shapeType === 'line') {
             previewContext.moveTo(10, 10);
