@@ -175,6 +175,9 @@ class CanvasApp {
 
     onColorChange(e) {
         this.color = e.target.value;
+        if (this.shapeType === 'pencil' && this.currentShape) {
+            this.currentShape.color = this.color;
+        }
         this.drawShapePreview();
     }
 
