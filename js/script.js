@@ -1,13 +1,14 @@
 class Shape {
-    constructor(type, color) {
-        this.type = type;
+    constructor(color) {
         this.color = color;
     }
+
+    draw(context) {}
 }
 
 class Line extends Shape {
     constructor(startX, startY, endX, endY, color) {
-        super('line', color);
+        super(color);
         this.startX = startX;
         this.startY = startY;
         this.endX = endX;
@@ -15,29 +16,19 @@ class Line extends Shape {
     }
 
     draw(context) {
-        context.beginPath();
-        context.moveTo(this.startX, this.startY);
-        context.lineTo(this.endX, this.endY);
         context.strokeStyle = this.color;
         context.lineWidth = 5;
         context.lineCap = 'round';
-        context.stroke();
-    }
-
-    static drawIcon(context) {
         context.beginPath();
-        context.moveTo(10, 40);
-        context.lineTo(40, 10);
-        context.strokeStyle = '#000';
-        context.lineWidth = 2;
-        context.lineCap = 'round';
+        context.moveTo(this.startX, this.startY);
+        context.lineTo(this.endX, this.endY);
         context.stroke();
     }
 }
 
 class Rectangle extends Shape {
     constructor(startX, startY, width, height, color) {
-        super('rectangle', color);
+        super(color);
         this.startX = startX;
         this.startY = startY;
         this.width = width;
@@ -45,54 +36,34 @@ class Rectangle extends Shape {
     }
 
     draw(context) {
-        context.beginPath();
-        context.rect(this.startX, this.startY, this.width, this.height);
         context.strokeStyle = this.color;
         context.lineWidth = 5;
-        context.lineCap = 'round';
-        context.stroke();
-    }
-
-    static drawIcon(context) {
         context.beginPath();
-        context.rect(10, 10, 30, 30);
-        context.strokeStyle = '#000';
-        context.lineWidth = 2;
-        context.lineCap = 'round';
+        context.rect(this.startX, this.startY, this.width, this.height);
         context.stroke();
     }
 }
 
 class Circle extends Shape {
     constructor(centerX, centerY, radius, color) {
-        super('circle', color);
+        super(color);
         this.centerX = centerX;
         this.centerY = centerY;
         this.radius = radius;
     }
 
     draw(context) {
-        context.beginPath();
-        context.arc(this.centerX, this.centerY, this.radius, 0, 2 * Math.PI);
         context.strokeStyle = this.color;
         context.lineWidth = 5;
-        context.lineCap = 'round';
-        context.stroke();
-    }
-
-    static drawIcon(context) {
         context.beginPath();
-        context.arc(25, 25, 15, 0, 2 * Math.PI);
-        context.strokeStyle = '#000';
-        context.lineWidth = 2;
-        context.lineCap = 'round';
+        context.arc(this.centerX, this.centerY, this.radius, 0, 2 * Math.PI);
         context.stroke();
     }
 }
 
 class Pencil extends Shape {
     constructor(color) {
-        super('pencil', color);
+        super(color);
         this.points = [];
     }
 
@@ -101,26 +72,15 @@ class Pencil extends Shape {
     }
 
     draw(context) {
-        context.beginPath();
-        for (let i = 0; i < this.points.length - 1; i++) {
-            context.moveTo(this.points[i].x, this.points[i].y);
-            context.lineTo(this.points[i + 1].x, this.points[i + 1].y);
-        }
+        if (this.points.length < 2) return;
         context.strokeStyle = this.color;
-        context.lineWidth = 2;
+        context.lineWidth = 5;
         context.lineCap = 'round';
-        context.stroke();
-    }
-
-    static drawIcon(context) {
         context.beginPath();
-        context.moveTo(10, 10);
-        context.lineTo(20, 20);
-        context.lineTo(30, 10);
-        context.lineTo(40, 20);
-        context.strokeStyle = '#000';
-        context.lineWidth = 2;
-        context.lineCap = 'round';
+        context.moveTo(this.points[0].x, this.points[0].y);
+        for (let i = 1; i < this.points.length; i++) {
+            context.lineTo(this.points[i].x, this.points[i].y);
+        }
         context.stroke();
     }
 }
@@ -133,61 +93,34 @@ class CanvasApp {
         this.isDrawing = false;
         this.currentShape = null;
         this.shapeType = 'line';
-        this.color = document.getElementById('color').value;
+        this.color = '#000000';
+        this.startX = 0;
+        this.startY = 0;
 
-        this.setupListeners();
-        this.drawFigureIcons();
+        this.init();
     }
 
-    setupListeners() {
-        this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
-        this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
-        this.canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
-        document.getElementById('color').addEventListener('input', this.onColorChange.bind(this));
-        document.getElementById('clearCanvasBtn').addEventListener('click', this.clearCanvas.bind(this));
-
+    init() {
+        this.canvas.addEventListener('mousedown', (e) => this.onMouseDown(e));
+        this.canvas.addEventListener('mousemove', (e) => this.onMouseMove(e));
+        this.canvas.addEventListener('mouseup', (e) => this.onMouseUp(e));
+        document.getElementById('color').addEventListener('change', (e) => this.onColorChange(e));
+        document.getElementById('clearCanvasBtn').addEventListener('click', () => this.clearCanvas());
         document.querySelectorAll('.figure').forEach(figure => {
-            figure.addEventListener('click', () => {
-                this.shapeType = figure.getAttribute('data-shape');
-                document.querySelectorAll('.figure').forEach(f => f.classList.remove('selected'));
-                figure.classList.add('selected');
-                document.getElementById('selectedShapeName').textContent = this.shapeType.charAt(0).toUpperCase() + this.shapeType.slice(1);
-                this.drawShapePreview();
-            });
+            figure.addEventListener('click', () => this.onShapeSelect(figure));
         });
-    }
-
-    drawFigureIcons() {
-        document.querySelectorAll('.figure').forEach(figure => {
-            const context = figure.getContext('2d');
-            switch (figure.getAttribute('data-shape')) {
-                case 'line':
-                    Line.drawIcon(context);
-                    break;
-                case 'rectangle':
-                    Rectangle.drawIcon(context);
-                    break;
-                case 'circle':
-                    Circle.drawIcon(context);
-                    break;
-                case 'pencil':
-                    Pencil.drawIcon(context);
-                    break;
-            }
-        });
+        this.drawShapePreviews();
+        this.drawShapePreview();
     }
 
     onMouseDown(e) {
         this.isDrawing = true;
-        const x = e.clientX - this.canvas.offsetLeft;
-        const y = e.clientY - this.canvas.offsetTop;
+        this.startX = e.clientX - this.canvas.offsetLeft;
+        this.startY = e.clientY - this.canvas.offsetTop;
 
         if (this.shapeType === 'pencil') {
             this.currentShape = new Pencil(this.color);
-            this.currentShape.addPoint(x, y);
-        } else {
-            this.startX = x;
-            this.startY = y;
+            this.currentShape.addPoint(this.startX, this.startY);
         }
     }
 
@@ -198,7 +131,7 @@ class CanvasApp {
 
         if (this.shapeType === 'pencil' && this.currentShape) {
             this.currentShape.addPoint(x, y);
-            this.redraw();
+this.redraw();
         } else {
             this.redraw();
             this.context.strokeStyle = this.color;
@@ -254,13 +187,50 @@ class CanvasApp {
     redraw() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.shapes.forEach(shape => shape.draw(this.context));
+        if (this.currentShape && this.shapeType === 'pencil') {
+            this.currentShape.draw(this.context);
+        }
+    }
+
+    onShapeSelect(figure) {
+        this.shapeType = figure.getAttribute('data-shape');
+        document.querySelectorAll('.figure').forEach(f => f.classList.remove('selected'));
+        figure.classList.add('selected');
+        document.getElementById('selectedShapeName').textContent = this.shapeType;
+        this.drawShapePreview();
+    }
+
+    drawShapePreviews() {
+        document.querySelectorAll('.figure').forEach(figure => {
+            const shapeType = figure.getAttribute('data-shape');
+            const context = figure.getContext('2d');
+            context.clearRect(0, 0, figure.width, figure.height);
+            context.strokeStyle = '#000';
+            context.lineWidth = 5;
+            context.lineCap = 'round';
+
+            context.beginPath();
+            if (shapeType === 'line') {
+                context.moveTo(10, 10);
+                context.lineTo(40, 40);
+            } else if (shapeType === 'rectangle') {
+                context.rect(10, 10, 30, 30);
+            } else if (shapeType === 'circle') {
+                context.arc(25, 25, 15, 0, 2 * Math.PI);
+            } else if (shapeType === 'pencil') {
+                context.moveTo(10, 10);
+                context.lineTo(20, 20);
+                context.lineTo(30, 10);
+                context.lineTo(40, 20);
+            }
+            context.stroke();
+        });
     }
 
     drawShapePreview() {
         const previewCanvas = document.getElementById('shapePreviewCanvas');
         const previewContext = previewCanvas.getContext('2d');
         previewContext.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
-
         previewContext.strokeStyle = this.color;
         previewContext.lineWidth = 5;
         previewContext.lineCap = 'round';
