@@ -1,11 +1,14 @@
+//базовий клас фігур
 class Shape {
     constructor(color) {
         this.color = color;
     }
 
+    //Абстрактний метод малювання
     draw(context) {}
 }
 
+// клас представляє лінію
 class Line extends Shape {
     constructor(startX, startY, endX, endY, color) {
         super(color);
@@ -15,6 +18,7 @@ class Line extends Shape {
         this.endY = endY;
     }
 
+    //метод малювання лінії 
     draw(context) {
         context.strokeStyle = this.color;
         context.lineWidth = 5;
@@ -26,6 +30,7 @@ class Line extends Shape {
     }
 }
 
+//клас представляє прямокутник
 class Rectangle extends Shape {
     constructor(startX, startY, width, height, color) {
         super(color);
@@ -35,6 +40,7 @@ class Rectangle extends Shape {
         this.height = height;
     }
 
+    // Метод малювання прямокутника 
     draw(context) {
         context.strokeStyle = this.color;
         context.lineWidth = 5;
@@ -44,6 +50,7 @@ class Rectangle extends Shape {
     }
 }
 
+//клас  представляє коло
 class Circle extends Shape {
     constructor(centerX, centerY, radius, color) {
         super(color);
@@ -52,6 +59,7 @@ class Circle extends Shape {
         this.radius = radius;
     }
 
+    // Метод малювання кола 
     draw(context) {
         context.strokeStyle = this.color;
         context.lineWidth = 5;
@@ -61,16 +69,17 @@ class Circle extends Shape {
     }
 }
 
+// олівець
 class Pencil extends Shape {
     constructor(color) {
         super(color);
         this.points = [];
     }
-
     addPoint(x, y) {
         this.points.push({ x, y });
     }
 
+    // Метод малювання олівця
     draw(context) {
         if (this.points.length < 2) return;
         context.strokeStyle = this.color;
@@ -85,8 +94,10 @@ class Pencil extends Shape {
     }
 }
 
+// Клас додатку
 class CanvasApp {
     constructor() {
+        //ініціалізація полотна контексту масиву фігур
         this.canvas = document.getElementById('paintCanvas');
         this.context = this.canvas.getContext('2d');
         this.shapes = [];
@@ -96,10 +107,10 @@ class CanvasApp {
         this.color = '#000000';
         this.startX = 0;
         this.startY = 0;
-
         this.init();
     }
 
+    // Ініціалізація подій
     init() {
         this.canvas.addEventListener('mousedown', (e) => this.onMouseDown(e));
         this.canvas.addEventListener('mousemove', (e) => this.onMouseMove(e));
@@ -113,6 +124,7 @@ class CanvasApp {
         this.drawShapePreview();
     }
 
+    // Обробник події MouseDown
     onMouseDown(e) {
         this.isDrawing = true;
         this.startX = e.clientX - this.canvas.offsetLeft;
@@ -124,13 +136,15 @@ class CanvasApp {
         }
     }
 
+    // Обробник події MouseMove
     onMouseMove(e) {
         if (!this.isDrawing) return;
         const x = e.clientX - this.canvas.offsetLeft;
         const y = e.clientY - this.canvas.offsetTop;
 
         if (this.shapeType === 'pencil' && this.currentShape) {
-            this.currentShape.addPoint(x, y);this.redraw();
+            this.currentShape.addPoint(x, y);
+            this.redraw();
         } else {
             this.redraw();
             this.context.strokeStyle = this.color;
@@ -154,6 +168,7 @@ class CanvasApp {
         }
     }
 
+    // Обробник події MouseUp
     onMouseUp(e) {
         this.isDrawing = false;
         const x = e.clientX - this.canvas.offsetLeft;
@@ -173,6 +188,7 @@ class CanvasApp {
         this.redraw();
     }
 
+    // Обробник події ColorChange
     onColorChange(e) {
         this.color = e.target.value;
         if (this.shapeType === 'pencil' && this.currentShape) {
@@ -181,11 +197,11 @@ class CanvasApp {
         this.drawShapePreview();
     }
 
+    // очистка
     clearCanvas() {
         this.shapes = [];
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
-
     redraw() {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.shapes.forEach(shape => shape.draw(this.context));
@@ -194,6 +210,7 @@ class CanvasApp {
         }
     }
 
+    // вибір форми
     onShapeSelect(figure) {
         this.shapeType = figure.getAttribute('data-shape');
         document.querySelectorAll('.figure').forEach(f => f.classList.remove('selected'));
@@ -202,6 +219,7 @@ class CanvasApp {
         this.drawShapePreview();
     }
 
+    //ескіз 
     drawShapePreviews() {
         document.querySelectorAll('.figure').forEach(figure => {
             const shapeType = figure.getAttribute('data-shape');
@@ -229,6 +247,7 @@ class CanvasApp {
         });
     }
 
+    // ескіз попереднього перегляду
     drawShapePreview() {
         const previewCanvas = document.getElementById('shapePreviewCanvas');
         const previewContext = previewCanvas.getContext('2d');
