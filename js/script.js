@@ -10,12 +10,17 @@ class Shape {
 
 // клас представляє лінію
 class Line extends Shape {
-    constructor(startX, startY, endX, endY, color) {
+    constructor(startX, startY, color) {
         super(color);
         this.startX = startX;
         this.startY = startY;
         this.endX = endX;
         this.endY = endY;
+    }
+    addPoint(x, y) {
+
+        this.endX = x;
+        this.endY = y;
     }
 
     //метод малювання лінії 
@@ -59,11 +64,17 @@ class Circle extends Shape {
         this.radius = radius;
     }
 
+    addPoint(x, y) {
+
+        this.endX = x;
+        this.endY = y;
+    }
     // Метод малювання кола 
     draw(context) {
         context.strokeStyle = this.color;
         context.lineWidth = 5;
         context.beginPath();
+        
         context.arc(this.centerX, this.centerY, this.radius, 0, 2 * Math.PI);
         context.stroke();
     }
